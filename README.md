@@ -4,15 +4,9 @@
 # Football
 Add footballs to your server | PocketMineMP/Altay Plugin
 
-
-
-
-
 # **Features:**
  - Custom ball texture
  - Ball move engine (Not really good)
- 
- 
  
  # **Todo´s:**
  - Add real physic´s
@@ -20,6 +14,11 @@ Add footballs to your server | PocketMineMP/Altay Plugin
  - Better ball texture
  - Add games system (Thanks to mote166 [https://github.com/mote166] for this awesome idea!)
  - Send me your ideas!
+ 
+ # **Command:**
+ - /football <spawn|remove>
+             - spawn: Spawn a new football
+             - remove: Remove all footballs
  
  # **Permission:**
  - football.spawn
