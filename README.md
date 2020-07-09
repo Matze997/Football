@@ -1,4 +1,5 @@
 <img src="https://github.com/Matze997/Football/blob/master/football.png"/>
+<a href="https://poggit.pmmp.io/p/Football"><img src="https://poggit.pmmp.io/shield.state/Football"></a>
 
 # Football
 Add footballs to your server | PocketMineMP/Altay Plugin
