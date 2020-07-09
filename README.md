@@ -18,6 +18,7 @@ Add footballs to your server | PocketMineMP/Altay Plugin
  - Add real physic´s
  - Add football gates
  - Better ball texture
+ - Add games system (Thanks to mote166 [https://github.com/mote166] for this awesome idea!)
  - Send me your ideas!
  
  # **Permission:**
