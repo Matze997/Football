@@ -4,5 +4,6 @@ branches:
 - master
 projects:
   Football:
-    path: ""
+    path: /
+    icon: football.png
 ...
