@@ -5,6 +5,7 @@ namespace matze\football;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
+use pocketmine\Server;
 
 class FootballCommand extends Command {
 
@@ -13,7 +14,7 @@ class FootballCommand extends Command {
      */
 
     public function __construct() {
-        parent::__construct("football", "Spawn football");
+        parent::__construct("football", "Spawn football", "/football <spawn|remove>");
         $this->setPermission("football.spawn");
     }
 
@@ -31,6 +32,29 @@ class FootballCommand extends Command {
         if(!$this->testPermissionSilent($sender)){
             return;
         }
-        Football::getInstance()->spawnFootball($sender);
+        if(!isset($args[0])){
+            $sender->sendMessage($this->usageMessage);
+            return;
+        }
+        switch ($args[0]){
+            case "spawn":
+                Football::getInstance()->spawnFootball($sender);
+                $sender->sendMessage("§7» §aYou have spawned a new football!");
+                break;
+            case "remove":
+                foreach (Server::getInstance()->getLevels() as $level){
+                    foreach ($level->getEntities() as $entity){
+                        if($entity instanceof FootballEntity){
+                            if(!$entity->isClosed()){
+                                $entity->close();
+                            }
+                        }
+                    }
+                }
+                $sender->sendMessage("§7» §aAll footballs were removed!");
+                break;
+            default:
+                $sender->sendMessage($this->usageMessage);
+        }
     }
 }
