@@ -60,8 +60,6 @@ class Football extends PluginBase {
         $footballEntity->setSkin(new Skin("Football", $bytes, "", "geometry.football", file_get_contents($this->getDataFolder()."football.json")));
         $footballEntity->setScale(1.5);
         $footballEntity->sendSkin();
-        $footballEntity->getDataPropertyManager()->setFloat(Entity::DATA_BOUNDING_BOX_WIDTH, 0.1);
-        $footballEntity->getDataPropertyManager()->setFloat(Entity::DATA_BOUNDING_BOX_HEIGHT, 0.1);
         $footballEntity->spawnToAll();
     }
 }
