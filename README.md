@@ -9,7 +9,7 @@ Add footballs to your server | PocketMineMP/Altay Plugin
 
 # **Features:**
  - Custom ball texture
- - Ball move engine (Need´s an update :-D)
+ - Ball move engine (Not really good)
  
  
  
