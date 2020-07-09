@@ -17,8 +17,8 @@ Add footballs to your server | PocketMineMP/Altay Plugin
  
  # **Command:**
  - /football <spawn|remove>
-   > spawn: Spawn a new football
-   > remove: Remove all footballs
+   - spawn: Spawn a new football
+   - remove: Remove all footballs
  
  # **Permission:**
  - football.spawn
