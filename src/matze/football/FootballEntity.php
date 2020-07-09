@@ -9,6 +9,8 @@ use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 
 class FootballEntity extends Human {
@@ -37,8 +39,11 @@ class FootballEntity extends Human {
             $this->setMotion(new Vector3($player->getDirectionVector()->x, 0.5, $player->getDirectionVector()->z));
             $this->speedTicks = 15;
         }
+        $this->airTicks = 0;
         $this->waitTicks = 5;
         $this->setRotation($player->yaw, 0);
+        //$this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
+        $this->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR_BUMP);
     }
 
     /**
@@ -47,7 +52,7 @@ class FootballEntity extends Human {
      */
 
     public function onUpdate(int $currentTick) : bool {
-        if($this->isOnGround() && $this->speedTicks > 0 && $this->waitTicks <= 0){
+        if($this->speedTicks > 0 && $this->waitTicks <= 0 && $this->isOnGround()){
             if(!$this->getFrontBlock()->isSolid()){
                 $this->setMotion(new Vector3($this->getDirectionVector()->x/1.2, $this->airTicks / 24, $this->getDirectionVector()->z/1.2));
             } else {
@@ -93,6 +98,7 @@ class FootballEntity extends Human {
             $this->setRotation($damager->yaw, 0);
             $this->speedTicks = 25;
             $this->waitTicks = 5;
+            $this->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR_BUMP);
         }
         $source->setCancelled();
     }
