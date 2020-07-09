@@ -42,8 +42,8 @@ class FootballEntity extends Human {
         $this->airTicks = 0;
         $this->waitTicks = 5;
         $this->setRotation($player->yaw, 0);
-        //$this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
-        $this->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR_BUMP);
+        $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
+        //$this->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR_BUMP);
     }
 
     /**
@@ -99,7 +99,7 @@ class FootballEntity extends Human {
             $this->setRotation($damager->yaw, 0);
             $this->speedTicks = 25;
             $this->waitTicks = 5;
-            $this->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR_BUMP);
+            $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
         }
         $source->setCancelled();
     }
