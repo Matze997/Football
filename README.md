@@ -2,7 +2,7 @@
 <a href="https://poggit.pmmp.io/p/Football"><img src="https://poggit.pmmp.io/shield.state/Football"></a>
 
 # Football
-Add footballs to your server | PocketMineMP/Altay Plugin
+Add footballs to your server | PocketMine-MP / Altay Plugin
 
 # **Features:**
  - Custom ball texture
