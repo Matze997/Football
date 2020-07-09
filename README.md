@@ -20,6 +20,9 @@ Add footballs to your server | PocketMineMP/Altay Plugin
  - Better ball texture
  - Send me your ideas!
  
+ # **Permission:**
+ - football.spawn
+ 
  
  
  # **Contact me:**
