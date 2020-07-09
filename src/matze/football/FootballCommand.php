@@ -14,6 +14,7 @@ class FootballCommand extends Command {
 
     public function __construct() {
         parent::__construct("football", "Spawn football");
+        $this->setPermission("football.spawn");
     }
 
     /**
