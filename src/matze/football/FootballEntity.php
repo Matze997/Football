@@ -9,7 +9,6 @@ use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 
@@ -23,6 +22,11 @@ class FootballEntity extends Human {
 
     /** @var int  */
     private $waitTicks = 0;
+
+    /** @var float  */
+    public $width = 0.01;
+    /** @var float  */
+    public $height = 0.01;
 
     /**
      * @param Player $player
@@ -43,7 +47,6 @@ class FootballEntity extends Human {
         $this->waitTicks = 5;
         $this->setRotation($player->yaw, 0);
         $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
-        //$this->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_DOOR_BUMP);
     }
 
     /**
@@ -77,10 +80,6 @@ class FootballEntity extends Human {
             $this->waitTicks--;
         }
 
-        /*if($this->getViewers() === []){
-            $this->close();
-            return false;
-        }*/
         $this->setScale(1.5); //When the entity isn`t loaded, it turns back to it`s real scale
         return parent::onUpdate($currentTick);
     }
