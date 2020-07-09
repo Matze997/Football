@@ -77,10 +77,11 @@ class FootballEntity extends Human {
             $this->waitTicks--;
         }
 
-        if($this->getViewers() === []){
+        /*if($this->getViewers() === []){
             $this->close();
             return false;
-        }
+        }*/
+        $this->setScale(1.5); //When the entity isn`t loaded, it turns back to it`s real scale
         return parent::onUpdate($currentTick);
     }
 
