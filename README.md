@@ -4,15 +4,17 @@
 # Football
 Add footballs to your server | PocketMine-MP / Altay Plugin
 
+# **What´s new?**
+- New ball move engine (Recode)
+- Some changes in code
+
 # **Features:**
  - Custom ball texture
- - Ball move engine (Not really good)
+ - Ball move engine (Improved, but still not perfect :-D)
  
  # **Todo´s:**
- - Add real physic´s
  - Add football gates
  - Better ball texture
- - Add games system (Thanks to mote166 [https://github.com/mote166] for this awesome idea!)
  - Send me your ideas!
  
  # **Command:**
@@ -21,7 +23,7 @@ Add footballs to your server | PocketMine-MP / Altay Plugin
    - remove: Remove all footballs
  
  # **Permission:**
- - football.spawn
+ - football.use
  
  
  
