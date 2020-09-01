@@ -5,23 +5,29 @@ declare(strict_types=1);
 namespace matze\football;
 
 use pocketmine\block\Block;
+use pocketmine\block\Water;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\level\particle\ExplodeParticle;
+use pocketmine\level\particle\FlameParticle;
+use pocketmine\level\particle\HugeExplodeParticle;
+use pocketmine\level\particle\MobSpawnParticle;
+use pocketmine\level\particle\SmokeParticle;
+use pocketmine\level\sound\FizzSound;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\Player;
+use pocketmine\Server;
 
 class FootballEntity extends Human {
 
     /** @var int  */
-    private $speedTicks = 0;
+    private $waitTicks = 0;
 
     /** @var int  */
     private $airTicks = 0;
-
-    /** @var int  */
-    private $waitTicks = 0;
 
     /** @var float  */
     public $width = 0.01;
@@ -35,15 +41,11 @@ class FootballEntity extends Human {
     public function onCollideWithPlayer(Player $player) : void {
         if($player->isSprinting()){
             $this->setMotion(new Vector3($player->getDirectionVector()->x*2, 0.5, $player->getDirectionVector()->z*2));
-            $this->speedTicks = 25;
         } elseif ($player->isSneaking()){
             $this->setMotion(new Vector3($player->getDirectionVector()->x/2, 0.5, $player->getDirectionVector()->z/2));
-            $this->speedTicks = 5;
         } else {
             $this->setMotion(new Vector3($player->getDirectionVector()->x, 0.5, $player->getDirectionVector()->z));
-            $this->speedTicks = 15;
         }
-        $this->airTicks = 0;
         $this->waitTicks = 5;
         $this->setRotation($player->yaw, 0);
         $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
@@ -55,32 +57,49 @@ class FootballEntity extends Human {
      */
 
     public function onUpdate(int $currentTick) : bool {
-        if($this->speedTicks > 0 && $this->waitTicks <= 0 && $this->isOnGround()){
-            if(!$this->getFrontBlock()->isSolid()){
-                $this->setMotion(new Vector3($this->getDirectionVector()->x/1.2, $this->airTicks / 24, $this->getDirectionVector()->z/1.2));
-            } else {
-                if($this->yaw + 180 >= 360){
-                    $this->setRotation($this->yaw-180, 0);
-                } else {
-                    $this->setRotation($this->yaw+180, 0);
-                }
-                $this->setMotion(new Vector3($this->getDirectionVector()->x, 0, $this->getDirectionVector()->z));
-            }
+        if($this->isClosed()) {
+            return false;
         }
 
-        if(!$this->isOnGround()){
+        if(!$this->isOnGround()) {
             $this->airTicks++;
-        } else {
+        }
+
+        if(Football::getFrontBlock($this)->isSolid()) {
+            $yaw = $this->yaw - 180;
+            if($yaw < 0) {
+                $yaw += 360;
+            }
+            $this->setRotation($yaw, 0);
+            $this->setMotion(new Vector3($this->getDirectionVector()->x * $this->motion->x, 0.5, $this->getDirectionVector()->z * $this->motion->z));
+
+            $this->airTicks = 5;
+        }
+
+        $blockU = $this->getLevel()->getBlockAt((int) floor($this->x), (int) floor($this->y) - 1, (int) floor($this->z));
+        if($blockU->isSolid() && $this->airTicks > 10) {
+            $this->setMotion(new Vector3($this->motion->x * 1.1, $this->airTicks / 30, $this->motion->z * 1.1));
             $this->airTicks = 0;
         }
-        if($this->speedTicks > 0){
-            $this->speedTicks--;
-        }
-        if($this->waitTicks > 0){
-            $this->waitTicks--;
+
+        if($this->level->getBlockAt((int) floor($this->x), (int) floor($this->y), (int) floor($this->z)) instanceof Water) {
+            $this->setMotion(new Vector3($this->motion->x / 10, 0.16, $this->motion->z / 10));
         }
 
-        $this->setScale(1.5); //When the entity isn`t loaded, it turns back to it`s real scale
+        if($this->isOnFire()) {
+            $this->flagForDespawn();
+            $this->getLevel()->addParticle(new HugeExplodeParticle($this));
+            $pk = new PlaySoundPacket();
+            $pk->x = $this->x;
+            $pk->y = $this->y;
+            $pk->z = $this->z;
+            $pk->soundName = "random.explode";
+            $pk->volume = 1;
+            $pk->pitch = 1;
+            $this->getLevel()->broadcastGlobalPacket($pk);
+        }
+
+        $this->setScale(1.5);
         return parent::onUpdate($currentTick);
     }
 
@@ -96,7 +115,6 @@ class FootballEntity extends Human {
             }
             $this->setMotion(new Vector3($damager->getDirectionVector()->x, 0.7, $damager->getDirectionVector()->z));
             $this->setRotation($damager->yaw, 0);
-            $this->speedTicks = 25;
             $this->waitTicks = 5;
             $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
         }
@@ -104,23 +122,10 @@ class FootballEntity extends Human {
     }
 
     /**
-     * @return Block
+     * @return bool
      */
 
-    public function getFrontBlock() : Block {
-        switch ($this->getDirection()){
-            case 2:
-                return $this->getLevel()->getBlock(new Vector3($this->x-1, $this->y, $this->z));
-                break;
-            case 0:
-                return $this->getLevel()->getBlock(new Vector3($this->x+1, $this->y, $this->z));
-                break;
-            case 3:
-                return $this->getLevel()->getBlock(new Vector3($this->x, $this->y, $this->z-1));
-                break;
-            case 1:
-                return $this->getLevel()->getBlock(new Vector3($this->x, $this->y, $this->z+1));
-                break;
-        }
+    public function canBePushed() : bool {
+        return true;
     }
 }

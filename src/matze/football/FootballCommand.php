@@ -4,18 +4,20 @@ namespace matze\football;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\Player;
+use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 
-class FootballCommand extends Command {
+class FootballCommand extends Command implements PluginIdentifiableCommand {
 
     /**
      * FootballCommand constructor.
      */
 
     public function __construct() {
-        parent::__construct("football", "Spawn football", "/football <spawn|remove>");
-        $this->setPermission("football.spawn");
+        parent::__construct("football", "Football command", "/football <spawn|remove>");
+        $this->setPermission("football.use");
     }
 
     /**
@@ -25,7 +27,7 @@ class FootballCommand extends Command {
      * @return mixed|void
      */
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args) {
+    public function execute(CommandSender $sender, string $commandLabel, array $args) : void {
         if(!$sender instanceof Player){
             return;
         }
@@ -56,5 +58,13 @@ class FootballCommand extends Command {
             default:
                 $sender->sendMessage($this->usageMessage);
         }
+    }
+
+    /**
+     * @return Football
+     */
+
+    public function getPlugin() : Plugin {
+        return Football::getInstance();
     }
 }

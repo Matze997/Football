@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace matze\football;
 
+use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Skin;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 
 class Football extends PluginBase {
 
     /** @var null  */
-    static private $instance = null;
+    private static $instance = null;
 
     public function onEnable() : void {
         self::$instance = $this;
@@ -27,7 +29,7 @@ class Football extends PluginBase {
      * @return static
      */
 
-    static public function getInstance() : self {
+    public static function getInstance() : self {
         return self::$instance;
     }
 
@@ -35,11 +37,11 @@ class Football extends PluginBase {
      * @param Player $player
      */
 
-    public function spawnFootball(Player $player) {
+    public function spawnFootball(Player $player) : void {
         $nbt = Entity::createBaseNBT($player);
         $nbt->setTag($player->namedtag->getTag("Skin"));
-        $footballEntity = new FootballEntity($player->getLevel(), $nbt);
 
+        $footballEntity = new FootballEntity($player->getLevel(), $nbt);
 
         $image = imagecreatefrompng($this->getDataFolder()."football.png");
         $bytes = "";
@@ -55,12 +57,26 @@ class Football extends PluginBase {
             }
         }
         @imagedestroy($image);
-        //This is not my code. I`ve found it a long time ago by someone else but I don`t know where :/
 
         $footballEntity->setSkin(new Skin("Football", $bytes, "", "geometry.football", file_get_contents($this->getDataFolder()."football.json")));
         $footballEntity->setScale(1.5);
         $footballEntity->sendSkin();
         $footballEntity->spawnToAll();
+    }
+
+    /**
+     * @param Entity $entity
+     * @return Block
+     */
+
+    public static function getFrontBlock(Entity $entity) : Block {
+        switch ($entity->getDirection()){
+            case 2: return $entity->getLevel()->getBlock(new Vector3($entity->x-1, $entity->y, $entity->z));
+            case 0: return $entity->getLevel()->getBlock(new Vector3($entity->x+1, $entity->y, $entity->z));
+            case 3: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z-1));
+            case 1: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z+1));
+            default: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z));
+        }
     }
 }
 
