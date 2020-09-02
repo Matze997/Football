@@ -18,6 +18,7 @@ use pocketmine\level\sound\FizzSound;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -89,6 +90,14 @@ class FootballEntity extends Human {
         if($this->isOnFire()) {
             $this->flagForDespawn();
             $this->getLevel()->addParticle(new HugeExplodeParticle($this));
+            $pk = new PlaySoundPacket();
+            $pk->x = $this->x;
+            $pk->y = $this->y;
+            $pk->z = $this->z;
+            $pk->soundName = "random.explode";
+            $pk->volume = 1;
+            $pk->pitch = 1;
+            $this->getLevel()->broadcastGlobalPacket($pk);
         }
 
         $this->setScale(1.5);
