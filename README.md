@@ -25,6 +25,10 @@ Add footballs to your server | PocketMine-MP / Altay Plugin
  # **Permission:**
  - football.use
  
+ # **Note**
+ - You have to disable "Only Allow Trusted Skins" in the profile tab
+ <img src="https://github.com/Matze997/Football/blob/master/OnlyAllowTrustedSkins.png"/>
+ 
  
  
  # **Contact me:**
