@@ -3,3 +3,4 @@ version: 1.2.0
 api: 3.0.0
 main: matze\football\Football
 author: Matze
+mcpe-protocol: 407
