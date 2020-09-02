@@ -89,14 +89,6 @@ class FootballEntity extends Human {
         if($this->isOnFire()) {
             $this->flagForDespawn();
             $this->getLevel()->addParticle(new HugeExplodeParticle($this));
-            $pk = new PlaySoundPacket();
-            $pk->x = $this->x;
-            $pk->y = $this->y;
-            $pk->z = $this->z;
-            $pk->soundName = "random.explode";
-            $pk->volume = 1;
-            $pk->pitch = 1;
-            $this->getLevel()->broadcastGlobalPacket($pk);
         }
 
         $this->setScale(1.5);
