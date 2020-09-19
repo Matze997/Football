@@ -4,53 +4,27 @@ declare(strict_types=1);
 
 namespace matze\football;
 
-use pocketmine\block\Block;
 use pocketmine\block\Water;
 use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\level\particle\ExplodeParticle;
-use pocketmine\level\particle\FlameParticle;
+use pocketmine\level\particle\DustParticle;
 use pocketmine\level\particle\HugeExplodeParticle;
-use pocketmine\level\particle\MobSpawnParticle;
-use pocketmine\level\particle\SmokeParticle;
-use pocketmine\level\sound\FizzSound;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
-use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\Player;
-use pocketmine\Server;
+use pocketmine\utils\Config;
 
 class FootballEntity extends Human {
-
-    /** @var int  */
-    private $waitTicks = 0;
 
     /** @var int  */
     private $airTicks = 0;
 
     /** @var float  */
-    public $width = 0.01;
+    public $width = 0.4;
     /** @var float  */
-    public $height = 0.01;
-
-    /**
-     * @param Player $player
-     */
-
-    public function onCollideWithPlayer(Player $player) : void {
-        if($player->isSprinting()){
-            $this->setMotion(new Vector3($player->getDirectionVector()->x*2, 0.5, $player->getDirectionVector()->z*2));
-        } elseif ($player->isSneaking()){
-            $this->setMotion(new Vector3($player->getDirectionVector()->x/2, 0.5, $player->getDirectionVector()->z/2));
-        } else {
-            $this->setMotion(new Vector3($player->getDirectionVector()->x, 0.5, $player->getDirectionVector()->z));
-        }
-        $this->waitTicks = 5;
-        $this->setRotation($player->yaw, 0);
-        $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
-    }
+    public $height = 0.4;
 
     /**
      * @param int $currentTick
@@ -60,6 +34,33 @@ class FootballEntity extends Human {
     public function onUpdate(int $currentTick) : bool {
         if($this->isClosed()) {
             return false;
+        }
+
+        $gateId = $this->getgate();
+        if(!is_null($gateId)) {
+            $gateConfig = new Config(Football::getInstance()->getDataFolder()."gates.json", Config::JSON, ["gates" => []]);
+
+            $ballPos = Football::stringVectorToVector3($gateConfig->getNested("gates.{$gateId}.BallPos"));
+
+            $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
+            for ($n = 0; $n <= 10; $n++) $this->getLevel()->addParticle(new DustParticle($this->add(mt_rand(-9, 9) / 10, mt_rand(-9, 9) / 10, mt_rand(-9, 9) / 10), mt_rand(), mt_rand(), mt_rand()));
+
+            $this->teleport($ballPos);
+            return parent::onUpdate($currentTick);
+        }
+
+        foreach($this->getLevel()->getNearbyEntities($this->boundingBox->expandedCopy(0.2, 0.2, 0.2), $this) as $player){
+            if($player instanceof Player) {
+                $this->setRotation($player->yaw, 0);
+                if($player->isSprinting()){
+                    $this->setMotion(new Vector3($player->getDirectionVector()->x*2, 0.5, $player->getDirectionVector()->z*2));
+                } elseif ($player->isSneaking()){
+                    $this->setMotion(new Vector3($player->getDirectionVector()->x/2, 0.5, $player->getDirectionVector()->z/2));
+                } else {
+                    $this->setMotion(new Vector3($player->getDirectionVector()->x, 0.5, $player->getDirectionVector()->z));
+                }
+                $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
+            }
         }
 
         if(!$this->isOnGround()) {
@@ -114,9 +115,8 @@ class FootballEntity extends Human {
             if(!$damager instanceof Player){
                 return;
             }
-            $this->setMotion(new Vector3($damager->getDirectionVector()->x, 0.7, $damager->getDirectionVector()->z));
             $this->setRotation($damager->yaw, 0);
-            $this->waitTicks = 5;
+            $this->setMotion(new Vector3($damager->getDirectionVector()->x, 0.7, $damager->getDirectionVector()->z));
             $this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_ITEM_SHIELD_BLOCK);
         }
         $source->setCancelled();
@@ -128,5 +128,27 @@ class FootballEntity extends Human {
 
     public function canBePushed() : bool {
         return true;
+    }
+
+    /**
+     * @return int|null
+     */
+
+    public function getGate() : ?int {
+        $gateConfig = new Config(Football::getInstance()->getDataFolder()."gates.json", Config::JSON, ["gates" => []]);
+
+        foreach ($gateConfig->get("gates") as $id => $data) {
+            $pos1 = Football::stringVectorToVector3($data["Pos1"]);
+            $pos2 = Football::stringVectorToVector3($data["Pos2"]);
+
+            if(
+                $this->x >= min($pos1->x, $pos2->x) && $this->x <= max($pos1->x, $pos2->x) + 1 &&
+                $this->y >= min($pos1->y, $pos2->y) - 0.2 && $this->y <= max($pos1->y, $pos2->y) + 1 &&
+                $this->z >= min($pos1->z, $pos2->z) && $this->z <= max($pos1->z, $pos2->z) + 1
+            ){
+                return $id;
+            }
+        }
+        return null;
     }
 }

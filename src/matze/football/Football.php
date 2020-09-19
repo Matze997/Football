@@ -15,6 +15,15 @@ class Football extends PluginBase {
 
     /** @var null  */
     private static $instance = null;
+    /** @var array  */
+    public static $setup = [];
+
+    /** @var int  */
+    public const SETUP_POS1 = 1;
+    /** @var int  */
+    public const SETUP_POS2 = 2;
+    /** @var int  */
+    public const SETUP_FOOTBALL_POS = 3;
 
     public function onEnable() : void {
         self::$instance = $this;
@@ -23,6 +32,8 @@ class Football extends PluginBase {
 
         $this->saveResource("football.json");
         $this->saveResource("football.png");
+
+        new EventListener();
     }
 
     /**
@@ -69,7 +80,7 @@ class Football extends PluginBase {
      * @return Block
      */
 
-    public static function getFrontBlock(Entity $entity) : Block {
+    public static function getFrontBlock(Entity $entity) : Block {//Todo: Get real front block. lol
         switch ($entity->getDirection()){
             case 2: return $entity->getLevel()->getBlock(new Vector3($entity->x-1, $entity->y, $entity->z));
             case 0: return $entity->getLevel()->getBlock(new Vector3($entity->x+1, $entity->y, $entity->z));
@@ -77,6 +88,17 @@ class Football extends PluginBase {
             case 1: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z+1));
             default: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z));
         }
+    }
+
+    /**
+     * @param string $vector
+     * @param string $delimiter
+     * @return Vector3
+     */
+
+    public static function stringVectorToVector3(string $vector, string $delimiter = ",") : Vector3 {
+        $vector3 = explode(",", $vector);
+        return new Vector3((int)$vector3[0], (int)$vector3[1], (int)$vector3[2]);
     }
 }
 

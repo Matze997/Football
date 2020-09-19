@@ -8,6 +8,7 @@ use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
+use pocketmine\utils\Config;
 
 class FootballCommand extends Command implements PluginIdentifiableCommand {
 
@@ -16,7 +17,7 @@ class FootballCommand extends Command implements PluginIdentifiableCommand {
      */
 
     public function __construct() {
-        parent::__construct("football", "Football command", "/football <spawn|remove>");
+        parent::__construct("football", "Football command", "/football <spawn | remove | addgate | removegate [ID]>");
         $this->setPermission("football.use");
     }
 
@@ -39,24 +40,54 @@ class FootballCommand extends Command implements PluginIdentifiableCommand {
             return;
         }
         switch ($args[0]){
-            case "spawn":
+            case "spawn": {
+                if(!$sender->hasPermission("football.spawn")) return;
                 Football::getInstance()->spawnFootball($sender);
                 $sender->sendMessage("§7» §aYou have spawned a new football!");
                 break;
-            case "remove":
+            }
+            case "remove": {
+                if(!$sender->hasPermission("football.remove")) return;
+                $count = 0;
                 foreach (Server::getInstance()->getLevels() as $level){
                     foreach ($level->getEntities() as $entity){
                         if($entity instanceof FootballEntity){
                             if(!$entity->isClosed()){
                                 $entity->close();
+                                $count++;
                             }
                         }
                     }
                 }
-                $sender->sendMessage("§7» §aAll footballs were removed!");
+                $sender->sendMessage("§7» §aAll footballs were removed! §7(§aTotal§7:§a {$count}§7)");
                 break;
-            default:
-                $sender->sendMessage($this->usageMessage);
+            }
+            case "addgate": {
+                if(!$sender->hasPermission("football.addgate")) return;
+                $name = $sender->getName();
+                Football::$setup[$name]["Phase"] = Football::SETUP_POS1;
+
+                $sender->sendMessage("§7» §aSet the first position of the gate.");
+                break;
+            }
+            case "removegate": {
+                if(!$sender->hasPermission("football.removegate")) return;
+                $gateConfig = new Config(Football::getInstance()->getDataFolder()."gates.json", Config::JSON);
+                if(!isset($args[1])) {
+                    $sender->sendMessage($this->usageMessage);
+                    return;
+                }
+                $id = $args[1];
+                if(is_null($gateConfig->getNested("gates.{$id}"))) {
+                    $sender->sendMessage("§7» §aThere is no gate with this ID!");
+                    return;
+                }
+                $gateConfig->removeNested("gates.{$id}");
+                $gateConfig->save();
+                $sender->sendMessage("§7» §aGate with ID {$id} was successfully removed");
+                break;
+            }
+            default: $sender->sendMessage($this->usageMessage);
         }
     }
 

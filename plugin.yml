@@ -1,6 +1,23 @@
 name: Football
-version: 1.2.0
+version: 1.3.0
 api: 3.0.0
 main: matze\football\Football
 author: Matze
 mcpe-protocol: 408
+
+permissions:
+  football.use:
+    default: op
+    description: Allow players to use the football command
+  football.spawn:
+    default: op
+    description: Allow players to spawn footballs
+  football.remove:
+    default: op
+    description: Allow players to remove all footballs
+  football.addgate:
+    default: op
+    description: Allow players to add a goal
+  football.removegate:
+    default: op
+    description: Allow players to remove goals
