@@ -1,9 +1,9 @@
 name: Football
-version: 1.3.0
+version: 1.3.2
 api: 3.0.0
 main: matze\football\Football
 author: Matze
-mcpe-protocol: 408
+mcpe-protocol: [408,422]
 
 permissions:
   football.use:
