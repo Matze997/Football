@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace matze\football\command;
 
 use matze\football\entity\FootballEntity;
+use matze\football\Football;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\Server;
+use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginOwned;
 use function intval;
 
-class FootballCommand extends Command {
+class FootballCommand extends Command implements PluginOwned {
     public function __construct(){
         parent::__construct("football", "Football Command", "/football <spawn | remove>", ["fb"]);
         $this->setPermission("football.use");
@@ -19,7 +21,7 @@ class FootballCommand extends Command {
 
     public function execute(CommandSender $sender, string $commandLabel, array $args): void{
         if(!$sender instanceof Player){
-            $sender->sendMessage("§7» §cYou can only start this command ingame!");
+            $sender->sendMessage("§7» §cYou can only use this command ingame!");
             return;
         }
         if(!$this->testPermission($sender)) return;
@@ -52,5 +54,9 @@ class FootballCommand extends Command {
                 $sender->sendMessage($this->getUsage());
             }
         }
+    }
+
+    public function getOwningPlugin(): Plugin{
+        return Football::getInstance();
     }
 }
