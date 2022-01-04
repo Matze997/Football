@@ -1,9 +1,8 @@
 name: Football
-version: 1.3.4
-api: 3.0.0
+version: 2.0.0
+api: 4.0.0
 main: matze\football\Football
 author: Matze
-mcpe-protocol: [408,419,422,428,431,471]
 
 permissions:
   football.use:
@@ -15,9 +14,3 @@ permissions:
   football.remove:
     default: op
     description: Allow players to remove all footballs
-  football.addgate:
-    default: op
-    description: Allow players to add a goal
-  football.removegate:
-    default: op
-    description: Allow players to remove goals

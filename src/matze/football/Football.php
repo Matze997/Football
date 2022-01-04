@@ -4,101 +4,33 @@ declare(strict_types=1);
 
 namespace matze\football;
 
-use pocketmine\block\Block;
-use pocketmine\entity\Entity;
-use pocketmine\entity\Skin;
-use pocketmine\math\Vector3;
-use pocketmine\Player;
+use matze\football\command\FootballCommand;
+use matze\football\entity\FootballEntity;
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\EntityFactory;
+use pocketmine\entity\Human;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
+use pocketmine\Server;
+use pocketmine\world\World;
 
 class Football extends PluginBase {
+    private static Football $instance;
 
-    /** @var null  */
-    private static $instance = null;
-    /** @var array  */
-    public static $setup = [];
+    public static function getInstance(): Football{
+        return self::$instance;
+    }
 
-    /** @var int  */
-    public const SETUP_POS1 = 1;
-    /** @var int  */
-    public const SETUP_POS2 = 2;
-    /** @var int  */
-    public const SETUP_FOOTBALL_POS = 3;
-
-    public function onEnable() : void {
+    public function onEnable(): void{
         self::$instance = $this;
-        Football::getInstance()->getServer()->getCommandMap()->register("Football", new FootballCommand());
-        Entity::registerEntity(FootballEntity::class, true);
 
         $this->saveResource("football.json");
         $this->saveResource("football.png");
 
-        new EventListener();
-    }
+        Server::getInstance()->getCommandMap()->register("football", new FootballCommand());
 
-    /**
-     * @return static
-     */
-
-    public static function getInstance() : self {
-        return self::$instance;
-    }
-
-    /**
-     * @param Player $player
-     */
-
-    public function spawnFootball(Player $player) : void {
-        $nbt = Entity::createBaseNBT($player);
-        $nbt->setTag($player->namedtag->getTag("Skin"));
-
-        $footballEntity = new FootballEntity($player->getLevel(), $nbt);
-
-        $image = imagecreatefrompng($this->getDataFolder()."football.png");
-        $bytes = "";
-        $l = (int) @getimagesize($this->getDataFolder()."football.png")[1];
-        for ($y = 0; $y < $l; $y++) {
-            for ($x = 0; $x < 64; $x++) {
-                $rgba = @imagecolorat($image, $x, $y);
-                $a = ((~((int)($rgba >> 24))) << 1) & 0xff;
-                $r = ($rgba >> 16) & 0xff;
-                $g = ($rgba >> 8) & 0xff;
-                $b = $rgba & 0xff;
-                $bytes .= chr($r) . chr($g) . chr($b) . chr($a);
-            }
-        }
-        @imagedestroy($image);
-
-        $footballEntity->setSkin(new Skin("Football", $bytes, "", "geometry.football", file_get_contents($this->getDataFolder()."football.json")));
-        $footballEntity->setScale(1.5);
-        $footballEntity->sendSkin();
-        $footballEntity->spawnToAll();
-    }
-
-    /**
-     * @param Entity $entity
-     * @return Block
-     */
-
-    public static function getFrontBlock(Entity $entity) : Block {//Todo: Get real front block. lol
-        switch ($entity->getDirection()){
-            case 2: return $entity->getLevel()->getBlock(new Vector3($entity->x-1, $entity->y, $entity->z));
-            case 0: return $entity->getLevel()->getBlock(new Vector3($entity->x+1, $entity->y, $entity->z));
-            case 3: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z-1));
-            case 1: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z+1));
-            default: return $entity->getLevel()->getBlock(new Vector3($entity->x, $entity->y, $entity->z));
-        }
-    }
-
-    /**
-     * @param string $vector
-     * @param string $delimiter
-     * @return Vector3
-     */
-
-    public static function stringVectorToVector3(string $vector, string $delimiter = ",") : Vector3 {
-        $vector3 = explode(",", $vector);
-        return new Vector3((int)$vector3[0], (int)$vector3[1], (int)$vector3[2]);
+        EntityFactory::getInstance()->register(FootballEntity::class, function(World $world, CompoundTag $nbt) : FootballEntity{
+            return new FootballEntity(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt);
+        }, ["Football"]);
     }
 }
-
