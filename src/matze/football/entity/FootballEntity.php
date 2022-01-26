@@ -12,6 +12,7 @@ use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Human;
 use pocketmine\entity\Location;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\network\mcpe\protocol\types\LevelSoundEvent;
@@ -35,6 +36,11 @@ class FootballEntity extends Human {
     protected float $lastY = 0.0;
 
     protected int $timeout = 0;
+
+    protected function initEntity(CompoundTag $nbt): void{
+        parent::initEntity($nbt);
+        $this->setScale(1.5);
+    }
 
     public function onUpdate(int $currentTick): bool{
         $this->handleVertical();
@@ -180,7 +186,6 @@ class FootballEntity extends Human {
     public static function spawn(Location $location): FootballEntity {
         $location->pitch = 0.0;
         $entity = new FootballEntity($location, FootballSkin::get());
-        $entity->setScale(1.5);
         $entity->spawnToAll();
         return $entity;
     }
