@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace matze\football\util;
 
+use JsonException;
 use matze\football\Football;
 use pocketmine\entity\Skin;
 use function file_get_contents;
@@ -11,8 +12,13 @@ use function file_get_contents;
 class FootballSkin {
     protected static ?Skin $skin = null;
 
+    /**
+     * @throws JsonException
+     */
     public static function get(): Skin {
-        if(self::$skin !== null) return self::$skin;
+        if(self::$skin !== null) {
+            return self::$skin;
+        }
         $instance = Football::getInstance();
         $image = imagecreatefrompng($instance->getDataFolder()."football.png");
         $bytes = "";

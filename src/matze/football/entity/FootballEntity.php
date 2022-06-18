@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace matze\football\entity;
 
+use JsonException;
 use matze\football\util\Configuration;
 use matze\football\util\FootballSkin;
 use pocketmine\block\Block;
@@ -59,7 +60,9 @@ class FootballEntity extends Human {
         $this->lastY = $this->location->y;
         $update = parent::onUpdate($currentTick);
         if(!$update) {
-            if(++$this->timeout > 20) return false;
+            if(++$this->timeout > 20) {
+                return false;
+            }
             return true;
         }
         $this->timeout = 0;
@@ -116,8 +119,12 @@ class FootballEntity extends Human {
         $zDist = $position->z - $this->location->z;
         $yaw = atan2($zDist, $xDist) / M_PI * 180 - 90;
 
-        while($yaw > 360) $yaw -= 360;
-        while($yaw < 0) $yaw += 360;
+        while($yaw > 360) {
+            $yaw -= 360;
+        }
+        while($yaw < 0) {
+            $yaw += 360;
+        }
 
         //Mhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
         if(($yaw < 45 || $yaw > 315) || ($yaw < 225 && $yaw > 135)) {
@@ -128,7 +135,9 @@ class FootballEntity extends Human {
     }
 
     protected function applyEntityCollision(Entity $entity): void {
-        if(!$entity instanceof FootballEntity) return;
+        if(!$entity instanceof self) {
+            return;
+        }
         $d0 = $entity->getLocation()->x - $this->location->x;
         $d1 = $entity->getLocation()->z - $this->location->z;
         $d2 = abs(max($d0, $d1));
@@ -183,6 +192,9 @@ class FootballEntity extends Human {
         }
     }
 
+    /**
+     * @throws JsonException
+     */
     public static function spawn(Location $location): FootballEntity {
         $location->pitch = 0.0;
         $entity = new FootballEntity($location, FootballSkin::get());
@@ -194,7 +206,9 @@ class FootballEntity extends Human {
      * @return Block[]
      */
     public function getHorizontallyCollidingBlocks(): array {
-        if(!$this->isCollidedHorizontally) return [];
+        if(!$this->isCollidedHorizontally) {
+            return [];
+        }
         return $this->location->getWorld()->getCollisionBlocks($this->getBoundingBox()->expandedCopy(0.01, 0, 0.01));
     }
 }

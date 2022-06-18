@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace matze\football\util;
 
-final class Configuration {
+interface Configuration {
     public const MIN_VERTICAL_ENERGY = 0.09;
     public const MIN_HORIZONTAL_ENERGY = 0.125;
 
