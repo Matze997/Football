@@ -3,7 +3,7 @@ version: 2.0.0
 api: 4.0.0
 main: matze\football\Football
 author: Matze
-mcpe-protocol: [475, 486, 503]
+mcpe-protocol: [475, 486, 503, 527]
 
 permissions:
   football.use:
