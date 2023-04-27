@@ -23,12 +23,9 @@ class Football extends PluginBase {
 
     public function onEnable(): void{
         self::$instance = $this;
-
         $this->saveResource("football.json");
         $this->saveResource("football.png");
-
         Server::getInstance()->getCommandMap()->register("football", new FootballCommand());
-
         EntityFactory::getInstance()->register(FootballEntity::class, function(World $world, CompoundTag $nbt) : FootballEntity{
             return new FootballEntity(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt);
         }, ["Football"]);

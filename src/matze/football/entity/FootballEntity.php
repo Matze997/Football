@@ -13,6 +13,7 @@ use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Human;
 use pocketmine\entity\Location;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
@@ -93,8 +94,11 @@ class FootballEntity extends Human {
         if($this->horizontalEnergy < Configuration::MIN_HORIZONTAL_ENERGY){
             $this->horizontalEnergy = 0.0;
         } else {
-            $this->motion->x = (-1 * sin(deg2rad($this->location->yaw))) * $this->horizontalEnergy;
-            $this->motion->z = (cos(deg2rad($this->location->yaw)))  * $this->horizontalEnergy;
+            $radians = deg2rad($this->location->yaw);
+            $sin = sin($radians);
+            $cos = cos($radians);
+            $this->motion->x = (-1 * $sin) * $this->horizontalEnergy;
+            $this->motion->z = $cos * $this->horizontalEnergy;
         }
 
         $collidingBlocks = $this->getHorizontallyCollidingBlocks();
@@ -117,39 +121,31 @@ class FootballEntity extends Human {
     public function handleCollision(Position $position): void {
         $xDist = $position->x - $this->location->x;
         $zDist = $position->z - $this->location->z;
-        $yaw = atan2($zDist, $xDist) / M_PI * 180 - 90;
 
-        while($yaw > 360) {
-            $yaw -= 360;
-        }
-        while($yaw < 0) {
-            $yaw += 360;
-        }
+        $yaw = atan2($zDist, $xDist) * 180 / M_PI - 90;
+        $yaw = fmod($yaw, 360);
 
-        //Mhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-        if(($yaw < 45 || $yaw > 315) || ($yaw < 225 && $yaw > 135)) {
-            $this->location->yaw = (-1 * $yaw) - 180;
-        } else {
-            $this->location->yaw = (-1 * $yaw);
+        if ($yaw < 45 || $yaw > 315) {
+            $this->location->yaw = -$yaw - 180;
+        } elseif ($yaw < 225 && $yaw > 135) {
+            $this->location->yaw = -$yaw;
         }
     }
 
     protected function applyEntityCollision(Entity $entity): void {
-        if(!$entity instanceof self) {
+        if (!$entity instanceof self) {
             return;
         }
-        $d0 = $entity->getLocation()->x - $this->location->x;
-        $d1 = $entity->getLocation()->z - $this->location->z;
-        $d2 = abs(max($d0, $d1));
+        $dx = $entity->getLocation()->x - $this->location->x;
+        $dz = $entity->getLocation()->z - $this->location->z;
+        $distSquared = $dx * $dx + $dz * $dz;
 
-        if($d2 > 0){
-            $d2 = sqrt($d2);
-            $d0 /= $d2;
-            $d1 /= $d2;
-            $d3 = min(1, 1 / $d2);
-
-            $entity->setMotion($entity->getMotion()->add($d0 * $d3 * 0.08, 0, $d1 * $d3 * 0.08));
-            $entity->scheduleUpdate();
+        if ($distSquared > 0) {
+            $dist = sqrt($distSquared);
+            $direction = new Vector3($dx / $dist, 0, $dz / $dist);
+            $factor = min(1, 1 / $dist);
+            $motion = $direction->multiply($factor * 0.08);
+            $entity->setMotion($entity->getMotion()->add($motion->x, $motion->y, $motion->z));
         }
     }
 
@@ -165,15 +161,20 @@ class FootballEntity extends Human {
         $vector3 = $location->asVector3();
         $this->location->yaw = $location->yaw;
         $player->getWorld()->broadcastPacketToViewers($vector3, LevelSoundEventPacket::create(LevelSoundEvent::ITEM_SHIELD_BLOCK, $vector3, 0, ":", false, true));
-        $this->kick(match (true) {
-            $player->isSneaking() => 0.5,
-            $player->isSprinting() => 1.5,
-            default => 1.0
-        }, match (true) {
-            $player->isSneaking() => 0.2,
-            $player->isSprinting() => 0.75,
-            default => 0.6
-        });
+
+        $strength = match(true) {
+            $player->isSneaking() => 0.45,
+            $player->isSprinting() => 1.4,
+            default => 0.75
+        };
+
+        $height = match(true) {
+            $player->isSneaking() => 0.15,
+            $player->isSprinting() => 0.65,
+            default => 0.55
+        };
+
+        $this->kick($strength, $height);
     }
 
     public function getInitialSizeInfo(): EntitySizeInfo{
